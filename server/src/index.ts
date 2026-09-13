@@ -6,7 +6,7 @@ import { createProvider } from './providers/index.js';
 import { chatRouter } from './routes/chat.js';
 
 const num = (key: string, fallback: number) => { const value = Number(process.env[key]); return Number.isFinite(value) && value > 0 ? value : fallback; };
-const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173,https://localhost').split(',').map((origin) => origin.trim()).filter(Boolean);
+const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost,https://localhost').split(',').map((origin) => origin.trim()).filter(Boolean);
 const app = express();
 const provider = createProvider(process.env.AI_PROVIDER);
 app.disable('x-powered-by');
