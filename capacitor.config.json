@@ -1,0 +1,8 @@
+{
+  "appId": "com.novaai.chat",
+  "appName": "Nova AI",
+  "versionCode": 3,
+  "versionName": "1.0.2",
+  "webDir": "client/dist",
+  "server": { "androidScheme": "https" }
+}
