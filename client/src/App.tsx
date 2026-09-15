@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthScreen } from './components/AuthScreen';
 import { Composer } from './components/Composer';
 import { MessageList } from './components/MessageList';
@@ -25,6 +25,7 @@ export default function App() {
   const [drawer, setDrawer] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const activeRequest = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastFailedPrompt, setLastFailedPrompt] = useState<string | null>(null); // Hata kurtarma için
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -132,8 +133,10 @@ export default function App() {
     // Arayüzü hızlıca (Optimistic) güncelle
     setChats((prev) => [updatedChat, ...prev.filter((c) => c.id !== updatedChat.id)]);
 
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    let accumulated = '';
     try {
-      let accumulated = '';
       const response = await ai.chat(updatedChat.messages.slice(0, -1), (delta) => {
         accumulated += delta;
         // Stream sırasında sadece aktif sohbetin içeriğini güncelliyoruz
@@ -146,7 +149,7 @@ export default function App() {
             };
           })
         );
-      });
+      }, controller.signal);
 
       // Stream bittiğinde son hali kaydet
       const finalChat = {
@@ -158,6 +161,17 @@ export default function App() {
       await persist(finalChat);
       setConnected(true);
     } catch {
+      if (controller.signal.aborted) {
+        const stoppedChat = {
+          ...updatedChat,
+          updatedAt: Date.now(),
+          messages: accumulated.trim()
+            ? updatedChat.messages.map((m) => (m.id === assistantMsgId ? { ...m, content: accumulated } : m))
+            : updatedChat.messages.slice(0, -1)
+        };
+        await persist(stoppedChat);
+        return;
+      }
       // Hata durumunda boş asistan mesajını sil (Rollback)
       const rollbackChat = {
         ...updatedChat,
@@ -169,9 +183,12 @@ export default function App() {
       setError('Bir sorun oluştu. AI servisine şu anda ulaşılamıyor.');
       setConnected(false);
     } finally {
+      if (activeRequest.current === controller) activeRequest.current = null;
       setLoading(false);
     }
   }, [active, loading, persist]);
+
+  const stopGenerating = useCallback(() => activeRequest.current?.abort(), []);
 
   // 7. Yardımcı Fonksiyonlar
   const rename = useCallback(async (chat: Chat) => {
@@ -271,7 +288,7 @@ export default function App() {
           </div>
         )}
 
-        <Composer onSend={send} disabled={loading} />
+        <Composer onSend={send} generating={loading} onStop={stopGenerating} />
       </main>
 
       <Settings

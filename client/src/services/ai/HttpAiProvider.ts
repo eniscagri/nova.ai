@@ -3,9 +3,11 @@ import type { AiProvider } from './AiProvider';
 import { apiBaseUrl as baseUrl } from '../api';
 export class HttpAiProvider implements AiProvider {
   async health(): Promise<boolean> { try { const response = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(5000) }); const body = await response.json() as { status?: string; ai?: { configured?: boolean } }; return response.ok && body.status === 'ok' && body.ai?.configured === true; } catch { return false; } }
-  async chat(messages: Message[], onDelta?: (delta: string) => void): Promise<string> {
+  async chat(messages: Message[], onDelta?: (delta: string) => void, signal?: AbortSignal): Promise<string> {
     let response: Response;
-    try { response = await fetch(`${baseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages.map(({ role, content }) => ({ role, content })), stream: Boolean(onDelta) }), signal: AbortSignal.timeout(35000) }); }
+    const timeout = AbortSignal.timeout(35000);
+    const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
+    try { response = await fetch(`${baseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages.map(({ role, content }) => ({ role, content })), stream: Boolean(onDelta) }), signal: requestSignal }); }
     catch { throw new Error('NETWORK'); }
     if (!response.ok) throw new Error('API');
     if (response.headers.get('content-type')?.includes('text/event-stream')) return this.readStream(response, onDelta);
