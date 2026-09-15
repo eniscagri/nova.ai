@@ -54,7 +54,9 @@ export default function App() {
     storage.getChats().then((saved) => {
       const ordered = saved.sort((a, b) => b.updatedAt - a.updatedAt);
       setChats(ordered);
-      setActiveId(ordered[0]?.id ?? null);
+      // Her uygulama açılışında kullanıcıyı önce boş Yeni sohbet alanına getir.
+      // Geçmiş silinmez; kullanıcı dilediğinde sol menüden geri dönebilir.
+      setActiveId(null);
     });
 
     ai.health().then(setConnected);
