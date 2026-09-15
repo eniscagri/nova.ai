@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import type { AiProvider } from '../providers/AiProvider.js';
+import type { AiProvider, ConversationStyle } from '../providers/AiProvider.js';
 
-const payloadSchema = z.object({ messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1) })).min(1), stream: z.boolean().optional() });
+const payloadSchema = z.object({ messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1) })).min(1), stream: z.boolean().optional(), conversationStyle: z.enum(['dengeli', 'futbol', 'basketbol', 'kitap', 'girisimci', 'sakin_koc']).optional() });
 
 function errorPayload(error: unknown, timedOut: boolean) {
   if (timedOut) return { status: 504, code: 'AI_TIMEOUT', message: 'AI servisi zamanında yanıt vermedi.' };
@@ -28,12 +28,12 @@ export function chatRouter(provider: AiProvider, timeoutMs: number, maxMessageLe
       if (parsed.data.stream && provider.supportsStreaming && provider.stream) {
         res.status(200).set({ 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
         res.flushHeaders();
-        for await (const delta of provider.stream(parsed.data.messages, controller.signal)) res.write(`event: delta\ndata: ${JSON.stringify({ delta })}\n\n`);
+        for await (const delta of provider.stream(parsed.data.messages, controller.signal, parsed.data.conversationStyle as ConversationStyle | undefined)) res.write(`event: delta\ndata: ${JSON.stringify({ delta })}\n\n`);
         res.write('event: done\ndata: {}\n\n');
         res.end();
         return;
       }
-      const result = await provider.chat(parsed.data.messages, controller.signal);
+      const result = await provider.chat(parsed.data.messages, controller.signal, parsed.data.conversationStyle as ConversationStyle | undefined);
       if (!result.content?.trim()) throw new Error('Provider returned an empty response');
       res.json({ message: { role: 'assistant', content: result.content }, provider: provider.name, streaming: false });
     } catch (error) {

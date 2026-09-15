@@ -5,6 +5,6 @@ import type { AiProvider } from './AiProvider';
 export class PiProvider implements AiProvider {
   async health(): Promise<boolean> { return false; }
   async chat(_messages: Message[], _onDelta?: (delta: string) => void): Promise<string> {
-    throw new Error('Pi.ai direct client integration is unavailable without an officially documented public API.');
+    throw new Error('Nova direct client integration is unavailable without an officially documented public API.');
   }
 }

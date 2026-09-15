@@ -1,15 +1,21 @@
 import type { Message } from '../../types/chat';
 import type { AiProvider } from './AiProvider';
+import type { ConversationStyle } from '../SocialService';
 import { apiBaseUrl as baseUrl } from '../api';
 export class HttpAiProvider implements AiProvider {
   async health(): Promise<boolean> { try { const response = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(5000) }); const body = await response.json() as { status?: string; ai?: { configured?: boolean } }; return response.ok && body.status === 'ok' && body.ai?.configured === true; } catch { return false; } }
-  async chat(messages: Message[], onDelta?: (delta: string) => void, signal?: AbortSignal): Promise<string> {
+  async chat(messages: Message[], onDelta?: (delta: string) => void, signal?: AbortSignal, style: ConversationStyle = 'dengeli'): Promise<string> {
     let response: Response;
     const timeout = AbortSignal.timeout(35000);
     const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
-    try { response = await fetch(`${baseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages.map(({ role, content }) => ({ role, content })), stream: Boolean(onDelta) }), signal: requestSignal }); }
+    try { response = await fetch(`${baseUrl}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages.map(({ role, content }) => ({ role, content })), stream: Boolean(onDelta), conversationStyle: style }), signal: requestSignal }); }
     catch { throw new Error('NETWORK'); }
-    if (!response.ok) throw new Error('API');
+    if (!response.ok) {
+      const body = await response.json().catch(() => null) as { error?: { code?: unknown; message?: unknown } } | null;
+      const code = typeof body?.error?.code === 'string' ? body.error.code : 'API';
+      const message = typeof body?.error?.message === 'string' ? body.error.message : '';
+      throw new Error(message ? `${code}:${message}` : code);
+    }
     if (response.headers.get('content-type')?.includes('text/event-stream')) return this.readStream(response, onDelta);
     const body: unknown = await response.json().catch(() => null);
     if (!body || typeof body !== 'object') throw new Error('API');

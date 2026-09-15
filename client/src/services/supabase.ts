@@ -10,5 +10,5 @@ export const supabaseConfigured = Boolean(url && publishableKey);
 export const supabase = createClient(
   url || 'https://local.invalid',
   publishableKey || 'missing-public-key',
-  { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } }
+  { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } }
 );

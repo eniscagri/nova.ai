@@ -11,5 +11,8 @@ work/
 .gradle
 android/.gradle
 android/local.properties
+android/keystore.properties
+android/*.jks
+android/*.keystore
 android/app/build
 server/data/

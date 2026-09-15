@@ -11,7 +11,17 @@
     "android:sync:local": "npm run build:android:local --workspace=client && node scripts/sync-android-local.mjs && node scripts/normalize-android.mjs",
     "android:open:local": "npm run android:sync:local && npx cap open android"
   },
-  "workspaces": ["client", "server"],
-  "devDependencies": { "@capacitor/cli": "^7.4.3" },
-  "dependencies": { "@capacitor/android": "^7.4.3", "@capacitor/core": "^7.4.3" }
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/browser": "^7.0.5",
+    "@capacitor/core": "^7.4.3"
+  }
 }

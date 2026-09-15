@@ -24,8 +24,7 @@ allprojects {
     }
 }
 
-// Capacitor 7 writes Java 21 source compatibility into generated module files.
-// The project intentionally compiles all modules with Android Studio's supported JDK 17.
+// Keep all generated Capacitor modules compatible with the Android build toolchain.
 allprojects {
     tasks.withType(JavaCompile).configureEach {
         sourceCompatibility = JavaVersion.VERSION_17

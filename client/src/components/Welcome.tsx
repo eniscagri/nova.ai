@@ -12,7 +12,7 @@ const SUGGESTIONS: Suggestion[] = [
   { id: 'plan', title: 'Günümü planla', description: 'Hedeflerine göre uygulanabilir bir gün planı oluştur.', prompt: 'Bugün için hedeflerime uygun, uygulanabilir bir plan oluştur.', icon: <PlanIcon /> },
   { id: 'idea', title: 'Bir fikir geliştir', description: 'Yeni bir proje veya iş fikrini birlikte şekillendir.', prompt: 'Bana özgün ve uygulanabilir bir iş fikri geliştir.', icon: <IdeaIcon /> },
   { id: 'code', title: 'Bu kodu açıkla', description: 'Karmaşık kodları sade adımlarla anlamama yardımcı ol.', prompt: 'Aşağıdaki kodu adım adım, sade bir dille açıkla:\n\n', icon: <CodeIcon /> },
-  { id: 'learn', title: 'Bugün ne öğreneyim?', description: 'Seviyene ve zamanına uygun bir öğrenme rotası hazırla.', prompt: 'Bugün ne öğrenmeliyim? Seviyeme uygun kısa bir öğrenme planı oluştur.', icon: <LearnIcon /> },
+  { id: 'learn', title: 'Bugün ne öğreneyim?', description: 'Zamanına uygun bir öğrenme rotası hazırla.', prompt: 'Bugün ne öğrenmeliyim? Seviyeme uygun kısa bir öğrenme planı oluştur.', icon: <LearnIcon /> },
 ];
 
 const STARTERS = ['Bir e-posta taslağı yaz', 'Fikrimi değerlendir'];
@@ -23,8 +23,6 @@ export function Welcome({ choose }: WelcomeProps) {
     <div className="welcome-ambient welcome-ambient-two" aria-hidden="true" />
     <div className="welcome-inner">
       <section className="welcome-hero" aria-labelledby="welcome-title">
-        <div className="welcome-orbit" aria-hidden="true"><img className="nova-mark" src="/nova.svg" alt="" /></div>
-        <span className="welcome-kicker"><span /> NOVA AI</span>
         <h1 id="welcome-title">Nereden başlayalım?</h1>
         <p>Bir konu seç veya mesajını yaz.</p>
       </section>
@@ -40,6 +38,7 @@ export function Welcome({ choose }: WelcomeProps) {
           </button>)}
         </div>
       </section>
+
     </div>
   </main>;
 }
