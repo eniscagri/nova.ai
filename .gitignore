@@ -12,3 +12,4 @@ work/
 android/.gradle
 android/local.properties
 android/app/build
+server/data/

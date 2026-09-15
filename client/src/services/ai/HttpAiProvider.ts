@@ -1,6 +1,6 @@
 import type { Message } from '../../types/chat';
 import type { AiProvider } from './AiProvider';
-const baseUrl = (import.meta.env.VITE_API_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+import { apiBaseUrl as baseUrl } from '../api';
 export class HttpAiProvider implements AiProvider {
   async health(): Promise<boolean> { try { const response = await fetch(`${baseUrl}/api/health`, { signal: AbortSignal.timeout(5000) }); const body = await response.json() as { status?: string; ai?: { configured?: boolean } }; return response.ok && body.status === 'ok' && body.ai?.configured === true; } catch { return false; } }
   async chat(messages: Message[], onDelta?: (delta: string) => void): Promise<string> {
