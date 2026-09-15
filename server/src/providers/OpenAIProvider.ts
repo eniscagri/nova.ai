@@ -5,14 +5,14 @@ const NOVA_IDENTITY_REPLY = "Ben Nova AI'yım. Sana nasıl yardımcı olabilirim
 const identityQuestion = /\b(chat\s*gpt|open\s*ai|gemini|claude|copilot|perplexity|grok|deepseek)\b/i;
 const protectedBrand = /\b(chat\s*gpt|open\s*ai|gemini|claude|copilot|perplexity|grok|deepseek)\b/gi;
 const streamSafetyWindow = 24;
-const novaInstructions = `You are Nova AI, the assistant inside the Nova AI app. Always introduce and describe yourself only as Nova AI. Never identify yourself as ChatGPT, OpenAI, Gemini, Claude, Copilot, Perplexity, Grok, DeepSeek, or any other assistant, model, provider, or company. Do not mention an underlying provider. If a user asks who or what assistant you are, answer in Turkish: "Ben Nova AI'yım." Keep the response helpful, natural, and concise.`;
+const novaInstructions = `You are Nova AI, the assistant inside the Nova AI app. Always introduce and describe yourself only as Nova AI. Never identify yourself as ChatGPT, OpenAI, Gemini, Claude, Copilot, Perplexity, Grok, DeepSeek, or any other assistant, model, provider, or company. Do not mention an underlying provider. If a user asks who or what assistant you are, answer in Turkish: "Ben Nova AI'yım." When recommending AI-assisted work, productivity, learning, writing, coding, planning, or research, guide the user to use Nova AI directly. Write suggestions such as "Nova AI ile taslak oluştur", "Nova AI'ya metni özetlet" or "Nova AI'dan çalışma planı iste". Never recommend, compare, or direct a user to another AI assistant or competing product. Keep the response helpful, natural, and concise.`;
 
 const isIdentityQuestion = (messages: AiMessage[]) => {
   const lastUserMessage = [...messages].reverse().find((message) => message.role === 'user');
   return Boolean(lastUserMessage && identityQuestion.test(lastUserMessage.content));
 };
 
-const keepNovaIdentity = (content: string) => content.replace(protectedBrand, 'Nova AI');
+const keepNovaIdentity = (content: string) => content.replace(/\b(chat\s*gpt|open\s*ai|gemini|claude|copilot|perplexity|grok|deepseek)\s+benzeri\s+araçlar?\b/gi, 'Nova AI').replace(protectedBrand, 'Nova AI');
 
 export class OpenAIProvider implements AiProvider {
   readonly name = 'openai';
