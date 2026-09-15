@@ -212,7 +212,7 @@ export default function App() {
   if (!authReady) {
     return (
       <main className="auth-loading">
-        <span className="auth-logo">✦</span>
+        <img className="auth-logo" src="/nova.svg" alt="Nova AI" />
         <p>Nova AI hazırlanıyor…</p>
       </main>
     );
