@@ -4,4 +4,5 @@ import App from './App';
 import './styles.css';
 import './polish.css';
 import './welcome.css';
+import './product.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);
