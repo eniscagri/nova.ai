@@ -15,7 +15,7 @@ const SUGGESTIONS: Suggestion[] = [
   { id: 'learn', title: 'Bugün ne öğreneyim?', description: 'Seviyene ve zamanına uygun bir öğrenme rotası hazırla.', prompt: 'Bugün ne öğrenmeliyim? Seviyeme uygun kısa bir öğrenme planı oluştur.', icon: <LearnIcon /> },
 ];
 
-const STARTERS = ['Bir e-posta taslağı yaz', 'Haftalık öğrenme planı hazırla', 'Bir fikrimi değerlendir'];
+const STARTERS = ['Bir e-posta taslağı yaz', 'Fikrimi değerlendir'];
 
 export function Welcome({ choose }: WelcomeProps) {
   return <main className="welcome">
@@ -25,14 +25,14 @@ export function Welcome({ choose }: WelcomeProps) {
       <section className="welcome-hero" aria-labelledby="welcome-title">
         <div className="welcome-orbit" aria-hidden="true"><img className="nova-mark" src="/nova.svg" alt="" /></div>
         <span className="welcome-kicker"><span /> NOVA AI</span>
-        <h1 id="welcome-title">Bugün neyi ileri taşıyoruz?</h1>
-        <p>Bir fikir, plan veya cevapla başlayalım. Nova AI yanında.</p>
+        <h1 id="welcome-title">Nereden başlayalım?</h1>
+        <p>Bir konu seç veya mesajını yaz.</p>
       </section>
       <div className="welcome-starters" aria-label="Hızlı başlangıç önerileri">
         {STARTERS.map((starter) => <button key={starter} type="button" onClick={() => choose(starter)}><span>↗</span>{starter}</button>)}
       </div>
       <section className="welcome-prompts" aria-label="Başlangıç seçenekleri">
-        <div className="welcome-section-heading"><span>HIZLI BAŞLANGIÇ</span><small>Bir konu seç veya aşağıdan mesajını yaz.</small></div>
+        <div className="welcome-section-heading"><span>HIZLI BAŞLANGIÇ</span><small>Bir dokunuşla devam et.</small></div>
         <div className="prompt-grid">
           {SUGGESTIONS.map(({ id, title, description, prompt, icon }) => <button key={id} type="button" className="prompt-card" onClick={() => choose(prompt)} aria-label={`Şu konudan başla: ${title}`}>
             <div className="prompt-card-header"><span className="prompt-icon">{icon}</span><span className="prompt-title">{title}</span></div>
