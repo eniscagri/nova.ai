@@ -51,7 +51,7 @@ MAX_CONVERSATION_MESSAGES=60
 
 ## Supabase kurulumu
 
-1. Supabase SQL Editor’da [20260915_social.sql](supabase/migrations/20260915_social.sql) dosyasının tamamını bir kez çalıştır.
+1. Supabase SQL Editor’da sırasıyla [20260915_social.sql](supabase/migrations/20260915_social.sql), [20260915_profile_usernames.sql](supabase/migrations/20260915_profile_usernames.sql) ve [20260923_profile_avatars.sql](supabase/migrations/20260923_profile_avatars.sql) dosyalarını bir kez çalıştır.
 2. Project Settings → API’den Project URL ve **publishable key** değerlerini `client/.env` içine yaz.
 3. Authentication → URL Configuration → Redirect URLs listesine şunu ekle:
 
@@ -60,6 +60,8 @@ MAX_CONVERSATION_MESSAGES=60
    ```
 
 Bu adres e-posta doğrulama ve şifre yenileme bağlantılarının Android uygulamasına güvenli dönüşünü sağlar.
+
+Profil görselleri `profile-avatars` Storage alanında tutulur. Yalnızca kullanıcı kendi klasörüne JPG, PNG, WebP veya GIF yükleyebilir; dosya sınırı 5 MB'dır. Görseller profilin herkese açık parçasıdır.
 
 ## Yerelde çalıştırma
 
@@ -124,3 +126,23 @@ npm run android:sync
 ```
 
 Ardından Android Studio’dan emülatörü seçip `Run` düğmesine basabilir veya debug APK’yı kurabilirsin.
+
+## Yalnızca sahibinin düzenlediği AI talimatları
+
+Proje terminalinde aşağıdaki komutu çalıştır:
+
+```powershell
+npm run ai:talimat -- "Bir stilist gibi çalış. Önce kullanıcının bütçesini, tarzını ve hangi etkinlik için giyineceğini öğren. Sonra gerekçeleriyle üç kombin öner. Fiyat veya stok bilgisi uydurma."
+```
+
+Genel asistana dönmek için:
+
+```powershell
+npm run ai:talimat -- "Kullanıcının ihtiyacına göre yardımcı olan genel amaçlı bir asistan olarak çalış."
+```
+
+Talimat `server/data/ai-instructions.txt` dosyasına kaydedilir ve her yeni AI isteğinde sunucu tarafından okunur. Yeniden derleme gerekmez. Dosya Git'e ve Android/web paketine dahil edilmez. Okuma veya düzenleme için herkese açık HTTP uç noktası yoktur; yalnızca sunucu dosyalarına erişimi olan yönetici değiştirebilir. Sohbet üzerinden gönderilen system/developer rolleri ve ek ayar alanları reddedilir. Sohbet tonu yönetici rolünü değiştirmez.
+
+Canlı uygulama uzak backend kullanıyorsa komutu o sunucuda çalıştır veya `AI_INSTRUCTIONS_FILE` ile kalıcı diskteki özel dosyanın yolunu belirt. Yerel dosyayı değiştirmek uzak sunucuyu değiştirmez. Açıkça yapılandırılan dosya okunamıyorsa istek hata verir; sessizce başka role geçmez. Varsayılan dosya yoksa genel asistan davranışı kullanılır.
+
+Bu talimat model sağlayıcısına gönderilir. API anahtarları, şifreler veya kesinlikle açıklanmaması gereken sırlar talimata yazılmaz: modelin talimatları ifşa etmemesi yönündeki yönlendirme mutlak gizlilik garantisi değildir. Dosya erişimi ise uygulama kullanıcılarına açılmaz.

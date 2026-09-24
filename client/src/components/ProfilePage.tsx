@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProfileEditor } from './Explore';
+import { ProfileAvatar } from './ProfileAvatar';
 import { SocialService, type ConversationStyle, type ExplorePost, type ProfileStats, type SocialProfile, type Visibility } from '../services/SocialService';
 
 const social = new SocialService();
 
 const styleLabels: Record<ConversationStyle, string> = {
-  dengeli: 'Dengeli',
-  futbol: 'Futbol tutkunu',
-  basketbol: 'Basketbol tutkunu',
-  kitap: 'Kitap kurdu',
-  girisimci: 'Girişimci',
+  dengeli: 'Net ve dengeli',
+  futbol: 'Futbol arkadaşı',
+  basketbol: 'Takım oyuncusu',
+  kitap: 'Düşünceli okur',
+  girisimci: 'Girişim ortağı',
   sakin_koc: 'Sakin koç'
 };
 
@@ -54,7 +55,6 @@ export function ProfilePage({ userId, onStartChat, onStyleChange }: { userId: st
   useEffect(() => { void load(); }, [load]);
 
   const displayName = profile?.display_name || 'Nova Kullanıcısı';
-  const initial = displayName.slice(0, 1).toLocaleUpperCase('tr-TR');
   const joinedText = useMemo(() => 'NovaAI topluluğundasın', []);
 
   return <section className="profile-page" aria-label="Profilim">
@@ -64,9 +64,8 @@ export function ProfilePage({ userId, onStartChat, onStyleChange }: { userId: st
     </div>
     {error && <p className="social-error" role="alert">{error}<button onClick={() => void load()}>Yenile</button></p>}
     <div className="profile-hero">
-      <div className="profile-cover" />
       <div className="profile-identity">
-        <div className="profile-page-avatar">{initial}</div>
+        <ProfileAvatar className="profile-page-avatar" name={displayName} url={profile?.avatar_url} />
         <div className="profile-identity-copy"><h2>{displayName}</h2><p>@{profile?.username ?? 'nova'}</p></div>
         <button className="profile-primary-action" onClick={() => setEditorOpen(true)} disabled={!profile}>Profili düzenle</button>
       </div>

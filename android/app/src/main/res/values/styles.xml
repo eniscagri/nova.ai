@@ -2,10 +2,10 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="colorPrimary">#6D45DB</item>
-        <item name="colorPrimaryDark">#4C1D95</item>
-        <item name="colorAccent">#A78BFA</item>
-        <item name="android:navigationBarColor">#121426</item>
+        <item name="colorPrimary">#AD00A7</item>
+        <item name="colorPrimaryDark">#7A0076</item>
+        <item name="colorAccent">#E6A4E2</item>
+        <item name="android:navigationBarColor">#AD00A7</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
@@ -16,7 +16,7 @@
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#121426</item>
+        <item name="windowSplashScreenBackground">#AD00A7</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

@@ -15,6 +15,7 @@ import { HttpAiProvider } from './services/ai/HttpAiProvider';
 import type { Chat, Message, ThemePreference } from './types/chat';
 import { id } from './utils/id';
 import { titleFromMessage } from './utils/title';
+import { disableUsageReminders, enableUsageReminders, markUsageReminderPrompted, scheduleUsageReminders, usageReminderPrompted, usageRemindersEnabled, usageRemindersSupported } from './services/UsageReminders';
 
 const ai = new HttpAiProvider();
 const accountAuth = new SupabaseAuth();
@@ -37,6 +38,8 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [connected, setConnected] = useState(false);
   const [theme, setTheme] = useState<ThemePreference>(() => (localStorage.getItem('nova-ai-theme') as ThemePreference) || 'system');
+  const [remindersEnabled, setRemindersEnabled] = useState(usageRemindersEnabled);
+  const [reminderPromptOpen, setReminderPromptOpen] = useState(false);
   const storage = useMemo(() => session ? new LocalStorageChatStorage(session.user.id) : null, [session?.user.id]);
 
   useEffect(() => {
@@ -72,6 +75,15 @@ export default function App() {
     mediaQuery.addEventListener('change', applyTheme);
     return () => mediaQuery.removeEventListener('change', applyTheme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!session || !usageRemindersSupported()) return;
+    if (remindersEnabled) void scheduleUsageReminders();
+    if (!remindersEnabled && !usageReminderPrompted()) {
+      const timer = window.setTimeout(() => setReminderPromptOpen(true), 1800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [session?.user.id, remindersEnabled]);
 
   const active = useMemo(() => chats.find((chat) => chat.id === activeId) ?? null, [chats, activeId]);
   const persist = useCallback(async (chat: Chat) => {
@@ -159,9 +171,25 @@ export default function App() {
   }, [session, storage]);
   const showExplore = useCallback(() => { setScreen('explore'); setDrawer(false); setError(null); }, []);
   const showProfile = useCallback(() => { setScreen('profile'); setDrawer(false); setError(null); }, []);
+  const changeReminders = useCallback(async (enabled: boolean) => {
+    if (!enabled) {
+      await disableUsageReminders();
+      setRemindersEnabled(false);
+      setReminderPromptOpen(false);
+      return;
+    }
+    const granted = await enableUsageReminders();
+    setRemindersEnabled(granted);
+    setReminderPromptOpen(false);
+    if (!granted) alert('Bildirim izni verilmedi. İstersen cihaz ayarlarından daha sonra açabilirsin.');
+  }, []);
+  const dismissReminderPrompt = useCallback(() => {
+    markUsageReminderPrompted();
+    setReminderPromptOpen(false);
+  }, []);
 
-  if (!authReady) return <main className="auth-loading"><img className="auth-logo" src="/nova.svg" alt="Nova AI" /><p>Nova AI hazırlanıyor…</p></main>;
-  if (!supabaseConfigured) return <main className="auth-loading"><img className="auth-logo" src="/nova.svg" alt="Nova AI" /><p>Hesap bağlantısı henüz yapılandırılmadı.</p></main>;
+  if (!authReady) return <main className="auth-loading"><img className="auth-logo" src="/nova-logo.png" alt="Nova AI" /><p>Nova AI hazırlanıyor…</p></main>;
+  if (!supabaseConfigured) return <main className="auth-loading"><img className="auth-logo" src="/nova-logo.png" alt="Nova AI" /><p>Hesap bağlantısı henüz yapılandırılmadı.</p></main>;
   if (!session) return <AuthScreen onAuthenticated={setSession} />;
 
   return <div className="app-shell">
@@ -179,6 +207,7 @@ export default function App() {
         <Composer onSend={send} generating={loading} onStop={stopGenerating} />
       </>}
     </main>
-    <Settings open={settingsOpen} theme={theme} user={session.user} onTheme={setTheme} onClear={clear} onLogout={() => void logout()} onDeleteAccount={deleteAccount} onClose={() => setSettingsOpen(false)} />
+    <Settings open={settingsOpen} theme={theme} user={session.user} onTheme={setTheme} onClear={clear} onLogout={() => void logout()} onDeleteAccount={deleteAccount} remindersEnabled={remindersEnabled} onReminders={changeReminders} onClose={() => setSettingsOpen(false)} />
+    {reminderPromptOpen && <div className="modal-backdrop reminder-backdrop" role="presentation"><section className="reminder-prompt" role="dialog" aria-modal="true" aria-labelledby="reminder-title"><span className="reminder-bell" aria-hidden="true">♢</span><p className="eyebrow">NOVA HATIRLATMALARI</p><h2 id="reminder-title">Nova sana ara sıra hatırlatsın mı?</h2><p>Fikirlerini geliştirmek ve planlarını sürdürmek için birkaç günde bir, yalnızca gündüz saatlerinde kısa bildirimler gönderebilir.</p><div><button onClick={dismissReminderPrompt}>Şimdi değil</button><button onClick={() => void changeReminders(true)}>Bildirimleri aç</button></div></section></div>}
   </div>;
 }

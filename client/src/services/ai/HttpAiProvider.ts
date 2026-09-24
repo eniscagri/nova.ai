@@ -26,7 +26,7 @@ export class HttpAiProvider implements AiProvider {
 
   private async readStream(response: Response, onDelta?: (delta: string) => void): Promise<string> {
     if (!response.body) throw new Error('MALFORMED');
-    const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; let content = '';
+    const reader = response.body.getReader(); const decoder = new TextDecoder(); let buffer = ''; let content = ''; let completed = false;
     while (true) {
       const next = await reader.read(); if (next.done) break;
       buffer += decoder.decode(next.value, { stream: true });
@@ -35,11 +35,12 @@ export class HttpAiProvider implements AiProvider {
         const type = event.match(/^event: (.+)$/m)?.[1]; const raw = event.match(/^data: (.+)$/m)?.[1];
         if (!raw) continue;
         const data = JSON.parse(raw) as { delta?: unknown; error?: { message?: string } };
+        if (type === 'done') completed = true;
         if (type === 'error') throw new Error(data.error?.message ?? 'API');
         if (type === 'delta' && typeof data.delta === 'string') { content += data.delta; onDelta?.(data.delta); }
       }
     }
-    if (!content.trim()) throw new Error('MALFORMED');
+    if (!completed || !content.trim()) throw new Error('MALFORMED');
     return content;
   }
 }

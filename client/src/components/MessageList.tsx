@@ -3,7 +3,7 @@ import type { Message } from '../types/chat';
 import { MarkdownMessage } from './MarkdownMessage';
 
 function Avatar({ role }: { role: Message['role'] }) {
-  return <div className={`avatar ${role === 'assistant' ? 'nova-avatar' : ''}`} aria-hidden="true">{role === 'assistant' ? <img src="/nova.svg" alt="" /> : 'S'}</div>;
+  return <div className={`avatar ${role === 'assistant' ? 'nova-avatar' : ''}`} aria-hidden="true">{role === 'assistant' ? <img src="/nova-logo.png" alt="" /> : 'S'}</div>;
 }
 
 export function MessageList({ messages, loading, onShare }: { messages: Message[]; loading: boolean; onShare: (content: string) => void }) {

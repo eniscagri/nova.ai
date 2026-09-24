@@ -21,7 +21,7 @@ app.use(rateLimit({ windowMs: num('RATE_LIMIT_WINDOW_MS', 60000), limit: num('RA
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ai: { provider: provider.name, configured: provider.isConfigured } }));
 app.use(legalRouter());
 app.use('/api', authRouter(auth));
-app.use('/api', accountRouter(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY));
+app.use('/api', accountRouter(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY));
 app.use('/api', chatRouter(provider, num('REQUEST_TIMEOUT_MS', 30000), num('MAX_MESSAGE_LENGTH', 12000), num('MAX_CONVERSATION_MESSAGES', 60)));
 app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'İstenen kaynak bulunamadı.' } }));
 await auth.initialize();

@@ -13,6 +13,8 @@ interface SettingsProps {
   onClear: () => void;
   onLogout: () => void;
   onDeleteAccount: () => Promise<void>;
+  remindersEnabled: boolean;
+  onReminders: (enabled: boolean) => Promise<void>;
   onClose: () => void;
 }
 
@@ -24,6 +26,8 @@ export function Settings({
   onClear,
   onLogout,
   onDeleteAccount,
+  remindersEnabled,
+  onReminders,
   onClose,
 }: SettingsProps) {
   const [deleting, setDeleting] = useState(false);
@@ -91,6 +95,20 @@ export function Settings({
               {label}
             </label>
           ))}
+        </div>
+
+        <hr />
+
+        <div className="notification-setting">
+          <div>
+            <h3>Kullanım hatırlatmaları</h3>
+            <p className="settings-help">Nova, birkaç günde bir gündüz saatlerinde kısa bir fikir veya planlama hatırlatması gönderir.</p>
+          </div>
+          <label className="settings-switch">
+            <input type="checkbox" checked={remindersEnabled} onChange={(event) => void onReminders(event.target.checked)} />
+            <span aria-hidden="true" />
+            <b>{remindersEnabled ? 'Açık' : 'Kapalı'}</b>
+          </label>
         </div>
 
         <hr />

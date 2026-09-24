@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SocialService, type ConversationStyle, type ExplorePost, type SocialProfile, type Visibility } from '../services/SocialService';
+import { ProfileAvatar } from './ProfileAvatar';
 
 const social = new SocialService();
 const styleOptions: Array<{ value: ConversationStyle; label: string; detail: string }> = [
-  { value: 'dengeli', label: 'Dengeli', detail: 'Sade ve çok yönlü' },
-  { value: 'futbol', label: 'Futbol tutkunu', detail: 'Spor benzetmeleriyle' },
-  { value: 'basketbol', label: 'Basketbol tutkunu', detail: 'Takım ve oyun odaklı' },
-  { value: 'kitap', label: 'Kitap kurdu', detail: 'Düşünceli ve meraklı' },
-  { value: 'girisimci', label: 'Girişimci', detail: 'Fikirleri adımlara böler' },
-  { value: 'sakin_koc', label: 'Sakin koç', detail: 'Destekleyici ve net' }
+  { value: 'dengeli', label: 'Net ve dengeli', detail: 'Önce sonucu, sonra uygulanabilir ayrıntıları verir' },
+  { value: 'futbol', label: 'Futbol arkadaşı', detail: 'Enerjik konuşur; uygun olduğunda tek bir futbol benzetmesi kullanır' },
+  { value: 'basketbol', label: 'Takım oyuncusu', detail: 'Hızlı, işbirlikçi ve oyun planı odaklıdır' },
+  { value: 'kitap', label: 'Düşünceli okur', detail: 'Fikirler arasında bağ kurar; alıntı ve kaynak uydurmaz' },
+  { value: 'girisimci', label: 'Girişim ortağı', detail: 'Fikri deneye, ölçüme ve sonraki adıma dönüştürür' },
+  { value: 'sakin_koc', label: 'Sakin koç', detail: 'Yargılamadan dinler ve işi küçük adımlara böler' }
 ];
 
 const visibilityText: Record<Visibility, string> = { public: 'Herkese açık', followers: 'Takipçilerim', private: 'Yalnızca ben' };
@@ -91,7 +92,7 @@ export function Explore({ userId, onStartChat, onStyleChange, sharedDraft, onSha
     {error && <p className="social-error" role="alert">{error}<button onClick={() => void load()}>Yenile</button></p>}
     <div className="explore-layout">
       <aside className="profile-card">
-        <div className="profile-avatar">{profile?.display_name.slice(0, 1).toUpperCase() ?? 'N'}</div>
+        <ProfileAvatar className="profile-avatar" name={profile?.display_name ?? 'Nova kullanıcısı'} url={profile?.avatar_url} />
         <strong>{profile?.display_name ?? 'Profil hazırlanıyor'}</strong>
         <small>@{profile?.username ?? 'nova'}</small>
         <p>{profile?.bio || 'Fikirlerini ve ilgi alanlarını burada paylaş.'}</p>
@@ -107,7 +108,7 @@ export function Explore({ userId, onStartChat, onStyleChange, sharedDraft, onSha
           <small>{sharedDraft ? 'Sohbetten seçtiğin bu metin yayınlanacak. Görünürlüğü değiştirebilirsin.' : 'Sohbetlerin burada otomatik görünmez. Yalnızca yazıp paylaştığın içerik yayınlanır.'}</small>
         </section>
         {loading ? <div className="feed-empty">Keşfet yükleniyor…</div> : posts.length ? posts.map((post) => <article className="post-card" key={post.id}>
-          <div className="post-author"><div className="mini-avatar">{post.profiles?.display_name?.slice(0, 1).toUpperCase() ?? 'N'}</div><div><strong>{post.profiles?.display_name ?? 'Nova kullanıcısı'}</strong><small>@{post.profiles?.username ?? 'nova'} · {new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short' }).format(new Date(post.published_at))}</small></div>{post.author_id !== userId && <button onClick={() => void follow(post.author_id)}>{following[post.author_id] ? 'Takip ediliyor' : 'Takip et'}</button>}<details className="post-menu"><summary aria-label="Paylaşım seçenekleri">⋮</summary><div>{post.author_id === userId ? <button onClick={() => void removePost(post)}>Sil</button> : <><button onClick={() => void report(post)}>Bildir</button><button className="danger" onClick={() => void block(post)}>Engelle</button></>}</div></details></div>
+          <div className="post-author"><ProfileAvatar className="mini-avatar" name={post.profiles?.display_name ?? 'Nova kullanıcısı'} url={post.profiles?.avatar_url} /><div><strong>{post.profiles?.display_name ?? 'Nova kullanıcısı'}</strong><small>@{post.profiles?.username ?? 'nova'} · {new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short' }).format(new Date(post.published_at))}</small></div>{post.author_id !== userId && <button onClick={() => void follow(post.author_id)}>{following[post.author_id] ? 'Takip ediliyor' : 'Takip et'}</button>}<details className="post-menu"><summary aria-label="Paylaşım seçenekleri">⋮</summary><div>{post.author_id === userId ? <button onClick={() => void removePost(post)}>Sil</button> : <><button onClick={() => void report(post)}>Bildir</button><button className="danger" onClick={() => void block(post)}>Engelle</button></>}</div></details></div>
           <p>{post.body}</p>
           <div className="post-actions"><button className={post.likedByMe ? 'liked' : ''} onClick={() => void like(post)} aria-label="Beğen">♥ <span>{post.likeCount || ''}</span></button><small>{visibilityText[post.visibility]}</small></div>
         </article>) : <div className="feed-empty"><strong>İlk fikri sen paylaş.</strong><p>Topluluk akışı henüz yeni. Kısa bir notla başlayabilirsin.</p></div>}
@@ -124,14 +125,39 @@ export function ProfileEditor({ profile, onClose, onSaved }: { profile: SocialPr
   const [interests, setInterests] = useState(profile.interests.join(', '));
   const [style, setStyle] = useState<ConversationStyle>(profile.conversation_style);
   const [visibility, setVisibility] = useState<Visibility>(profile.profile_visibility);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatar_url);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  useEffect(() => () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview); }, [avatarPreview]);
+  const chooseAvatar = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) { setError('JPG, PNG, WebP veya GIF seçebilirsin.'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError('Profil görseli en fazla 5 MB olabilir.'); return; }
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(file); setAvatarPreview(URL.createObjectURL(file)); setError('');
+  };
+  const removeAvatar = () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarFile(null); setAvatarPreview(null); setAvatarUrl(null); setError('');
+  };
   const save = async (event: React.FormEvent) => {
     event.preventDefault(); setBusy(true); setError('');
-    const next = { ...profile, username: username.trim().toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9_]/g, ''), display_name: name.trim(), bio: bio.trim(), interests: interests.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 8), conversation_style: style, profile_visibility: visibility };
-    try { await social.saveProfile(next); onSaved(next); }
+    let uploaded: { url: string; path: string } | null = null;
+    try {
+      if (avatarFile) uploaded = await social.uploadAvatar(profile.id, avatarFile);
+      const next = { ...profile, username: username.trim().toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9_]/g, ''), display_name: name.trim(), bio: bio.trim(), avatar_url: uploaded?.url ?? avatarUrl, interests: interests.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 8), conversation_style: style, profile_visibility: visibility };
+      await social.saveProfile(next);
+      if (uploaded) await social.cleanupAvatars(profile.id, uploaded.path);
+      else if (profile.avatar_url && !next.avatar_url) await social.cleanupAvatars(profile.id);
+      onSaved(next);
+    }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Profil güncellenemedi.'); }
     finally { setBusy(false); }
   };
-  return <div className="modal-backdrop"><form className="profile-editor" onSubmit={save} aria-label="Profilini düzenle"><header><div><p className="eyebrow">NOVA PROFİL</p><h2>Profilini düzenle</h2></div><button type="button" onClick={onClose} aria-label="Kapat">×</button></header><label>Görünen ad<input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={60} required /></label><label>Kullanıcı adı<input autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value.toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9_]/g, ''))} minLength={3} maxLength={24} pattern="[a-z0-9_]{3,24}" required /><small>@{username || 'kullanici_adi'} olarak görünür</small></label><label>Biyografi<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={180} placeholder="Kendinden kısaca bahset" /></label><label>İlgi alanları <small>Virgülle ayır</small><input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={180} placeholder="Tasarım, futbol, girişim" /></label><label>Nova’nın sohbet tonu<select value={style} onChange={(event) => setStyle(event.target.value as ConversationStyle)}>{styleOptions.map((option) => <option key={option.value} value={option.value}>{option.label} — {option.detail}</option>)}</select></label><label>Profil görünürlüğü<select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)}>{Object.entries(visibilityText).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>{error && <p className="auth-error">{error}</p>}<footer><button type="button" onClick={onClose}>Vazgeç</button><button disabled={busy}>{busy ? 'Kaydediliyor…' : 'Kaydet'}</button></footer></form></div>;
+  const selectedTone = styleOptions.find((option) => option.value === style) ?? styleOptions[0];
+  return <div className="modal-backdrop"><form className="profile-editor" onSubmit={save} aria-label="Profilini düzenle"><header><div><p className="eyebrow">NOVA PROFİL</p><h2>Profilini düzenle</h2></div><button type="button" onClick={onClose} aria-label="Kapat">×</button></header><div className="profile-avatar-editor"><ProfileAvatar className="profile-editor-avatar" name={name || profile.display_name} url={avatarPreview ?? avatarUrl} /><div><label className="avatar-upload-button">Fotoğraf veya GIF seç<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={chooseAvatar} /></label><small>JPG, PNG, WebP veya GIF · en fazla 5 MB</small>{(avatarPreview || avatarUrl) && <button type="button" onClick={removeAvatar}>Görseli kaldır</button>}</div></div><label>Görünen ad<input value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={60} required /></label><label>Kullanıcı adı<input autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value.toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9_]/g, ''))} minLength={3} maxLength={24} pattern="[a-z0-9_]{3,24}" required /><small>@{username || 'kullanici_adi'} olarak görünür</small></label><label>Biyografi<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={180} placeholder="Kendinden kısaca bahset" /></label><label>İlgi alanları <small>Virgülle ayır</small><input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={180} placeholder="Tasarım, futbol, girişim" /></label><label>Nova’nın sohbet tonu<select value={style} onChange={(event) => setStyle(event.target.value as ConversationStyle)}>{styleOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select><small>{selectedTone.detail}</small></label><p className="tone-help">Ton yalnızca anlatım biçimini değiştirir; Nova’nın doğruluk ve güvenlik kuralları aynı kalır.</p><label>Profil görünürlüğü<select value={visibility} onChange={(event) => setVisibility(event.target.value as Visibility)}>{Object.entries(visibilityText).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>{error && <p className="auth-error" role="alert">{error}</p>}<footer><button type="button" onClick={onClose}>Vazgeç</button><button disabled={busy}>{busy ? 'Kaydediliyor…' : 'Kaydet'}</button></footer></form></div>;
 }

@@ -8,6 +8,7 @@ export type SocialProfile = {
   username: string;
   display_name: string;
   bio: string;
+  avatar_url: string | null;
   interests: string[];
   conversation_style: ConversationStyle;
   profile_visibility: Visibility;
@@ -19,7 +20,7 @@ export type ExplorePost = {
   body: string;
   visibility: Visibility;
   published_at: string;
-  profiles: Pick<SocialProfile, 'username' | 'display_name'> | null;
+  profiles: Pick<SocialProfile, 'username' | 'display_name' | 'avatar_url'> | null;
   likeCount: number;
   likedByMe: boolean;
 };
@@ -34,18 +35,19 @@ const errorText = (message: string) => new Error(message || 'İşlem şu anda ta
 
 export class SocialService {
   async profile(userId: string): Promise<SocialProfile | null> {
-    const { data, error } = await supabase.from('profiles').select('id, username, display_name, bio, interests, conversation_style, profile_visibility').eq('id', userId).maybeSingle();
+    const { data, error } = await supabase.from('profiles').select('id, username, display_name, bio, avatar_url, interests, conversation_style, profile_visibility').eq('id', userId).maybeSingle();
     if (error) throw errorText(error.message);
     return data as SocialProfile | null;
   }
 
-  async saveProfile(profile: Pick<SocialProfile, 'id' | 'username' | 'display_name' | 'bio' | 'interests' | 'conversation_style' | 'profile_visibility'>): Promise<void> {
+  async saveProfile(profile: Pick<SocialProfile, 'id' | 'username' | 'display_name' | 'bio' | 'avatar_url' | 'interests' | 'conversation_style' | 'profile_visibility'>): Promise<void> {
     const username = profile.username.trim().toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/[^a-z0-9_]/g, '');
     if (!/^[a-z0-9_]{3,24}$/.test(username)) throw new Error('Kullanıcı adı 3–24 karakter olmalı; yalnızca harf, rakam ve alt çizgi kullanabilirsin.');
     const { error } = await supabase.from('profiles').update({
       username,
       display_name: profile.display_name.trim().slice(0, 60),
       bio: profile.bio.trim().slice(0, 180),
+      avatar_url: profile.avatar_url,
       interests: profile.interests.slice(0, 8),
       conversation_style: profile.conversation_style,
       profile_visibility: profile.profile_visibility
@@ -53,10 +55,31 @@ export class SocialService {
     if (error) throw errorText(error.message);
   }
 
+  async uploadAvatar(userId: string, file: File): Promise<{ url: string; path: string }> {
+    const allowed = new Map([
+      ['image/jpeg', 'jpg'], ['image/png', 'png'], ['image/webp', 'webp'], ['image/gif', 'gif']
+    ]);
+    const extension = allowed.get(file.type);
+    if (!extension) throw new Error('Profil görseli JPG, PNG, WebP veya GIF olmalı.');
+    if (file.size > 5 * 1024 * 1024) throw new Error('Profil görseli en fazla 5 MB olabilir.');
+    const path = `${userId}/${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from('profile-avatars').upload(path, file, { contentType: file.type, cacheControl: '3600', upsert: false });
+    if (error) throw errorText(error.message);
+    const { data } = supabase.storage.from('profile-avatars').getPublicUrl(path);
+    return { path, url: `${data.publicUrl}?v=${Date.now()}` };
+  }
+
+  async cleanupAvatars(userId: string, keepPath?: string): Promise<void> {
+    const { data, error } = await supabase.storage.from('profile-avatars').list(userId, { limit: 100 });
+    if (error) return;
+    const removals = (data ?? []).map((item) => `${userId}/${item.name}`).filter((path) => path !== keepPath);
+    if (removals.length) await supabase.storage.from('profile-avatars').remove(removals);
+  }
+
   async explore(userId: string): Promise<ExplorePost[]> {
     const { data: posts, error } = await supabase
       .from('posts')
-      .select('id, author_id, body, visibility, published_at, profiles!posts_author_id_fkey(username, display_name)')
+      .select('id, author_id, body, visibility, published_at, profiles!posts_author_id_fkey(username, display_name, avatar_url)')
       .eq('visibility', 'public')
       .order('published_at', { ascending: false })
       .limit(60);
@@ -80,7 +103,7 @@ export class SocialService {
   async profilePosts(userId: string): Promise<ExplorePost[]> {
     const { data, error } = await supabase
       .from('posts')
-      .select('id, author_id, body, visibility, published_at, profiles!posts_author_id_fkey(username, display_name)')
+      .select('id, author_id, body, visibility, published_at, profiles!posts_author_id_fkey(username, display_name, avatar_url)')
       .eq('author_id', userId)
       .order('published_at', { ascending: false })
       .limit(60);

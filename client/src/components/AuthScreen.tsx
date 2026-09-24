@@ -92,12 +92,13 @@ export function AuthScreen({ onAuthenticated }: { onAuthenticated: (session: Nov
 
   return <main className="auth-page">
     <section className="auth-art" aria-hidden="true">
-      <div className="auth-brand"><img className="auth-logo" src="/nova.svg" alt="" /><span>NOVA AI</span></div>
+      <img className="auth-cover" src="/nova-cover.png" alt="" />
+      <div className="auth-brand"><img className="auth-logo" src="/nova-logo.png" alt="" /><span>NOVA AI</span></div>
       <div className="auth-copy"><p className="eyebrow">DÜŞÜN · ÜRET · KEŞFET</p><h1>Fikirlerin için sakin bir alan.</h1><p>Yaz, sor, tasarla. İstersen seçtiğin düşünceleri Nova topluluğuyla paylaş.</p></div>
       <div className="auth-note">Sohbetlerin cihazında kalır. Paylaşım yalnızca sen seçtiğinde yapılır.</div>
     </section>
     <section className="auth-panel">
-      <div className="auth-mobile-brand"><img className="auth-logo" src="/nova.svg" alt="" /> NOVA AI</div>
+      <div className="auth-mobile-brand"><img className="auth-logo" src="/nova-logo.png" alt="" /> NOVA AI</div>
       <div className="auth-card">
         <div className="auth-heading"><p className="eyebrow">NOVA HESAP</p><h2>{title}</h2><p>{subtitle}</p></div>
         <form onSubmit={submit} className="auth-form">

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import type { AiProvider, ConversationStyle } from '../providers/AiProvider.js';
 
-const payloadSchema = z.object({ messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1) })).min(1), stream: z.boolean().optional(), conversationStyle: z.enum(['dengeli', 'futbol', 'basketbol', 'kitap', 'girisimci', 'sakin_koc']).optional() });
+const payloadSchema = z.object({ messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().trim().min(1) })).min(1), stream: z.boolean().optional(), conversationStyle: z.enum(['dengeli', 'futbol', 'basketbol', 'kitap', 'girisimci', 'sakin_koc']).optional() }).strict();
 
 function errorPayload(error: unknown, timedOut: boolean) {
   if (timedOut) return { status: 504, code: 'AI_TIMEOUT', message: 'AI servisi zamanında yanıt vermedi.' };
@@ -24,6 +24,8 @@ export function chatRouter(provider: AiProvider, timeoutMs: number, maxMessageLe
     }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const disconnected = () => { if (!res.writableEnded) controller.abort(); };
+    res.on('close', disconnected);
     try {
       if (parsed.data.stream && provider.supportsStreaming && provider.stream) {
         res.status(200).set({ 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
@@ -40,7 +42,7 @@ export function chatRouter(provider: AiProvider, timeoutMs: number, maxMessageLe
       const failure = errorPayload(error, controller.signal.aborted);
       if (res.headersSent) { res.write(`event: error\ndata: ${JSON.stringify({ error: { code: failure.code, message: failure.message } })}\n\n`); res.end(); }
       else res.status(failure.status).json({ error: { code: failure.code, message: failure.message } });
-    } finally { clearTimeout(timer); }
+    } finally { clearTimeout(timer); res.off('close', disconnected); }
   });
   return router;
 }
