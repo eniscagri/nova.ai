@@ -4,6 +4,17 @@ const page = (title: string, body: string) => `<!doctype html><html lang="tr"><h
 
 export function legalRouter() {
   const router = Router();
+  router.get('/', (_req, res) => res.type('html').send(`<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="google-site-verification" content="-G7rN76ieb25pLiCucw1WYM25htm6Ht2i2thTX7KWL0">
+<meta name="description" content="Nova AI, EnCa Studios tarafından sunulan yapay zekâ sohbet ve topluluk uygulamasıdır.">
+<title>Nova AI — EnCa Studios</title>
+<style>body{margin:0;background:#faf9ff;color:#211b35;font:17px/1.7 system-ui,sans-serif}main{max-width:800px;margin:auto;padding:64px 24px}header{border-bottom:1px solid #ddd5ee;padding-bottom:36px}small{color:#655879;letter-spacing:2px}h1{font-size:clamp(48px,10vw,80px);line-height:1.1;margin:20px 0;color:#633ad6}h2{margin-top:36px;font-size:24px}p{max-width:650px;color:#51465f}a{color:#5934c7;text-underline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:20px;margin-top:32px}footer{margin-top:44px;border-top:1px solid #ddd5ee;padding-top:24px;font-size:14px}</style>
+</head><body><main><header><small>ENCA STUDIOS</small><h1>Nova AI</h1><p>Fikirlerini geliştir, yazılarına destek al ve yapay zekâyla sohbet et.</p></header>
+<section><h2>Sohbet ve topluluk bir arada</h2><p>Nova AI, Android için bir yapay zekâ sohbet ve topluluk uygulamasıdır. Sorularını sorabilir, fikir üretebilir ve toplulukta içerik paylaşabilirsin.</p></section>
+<section><h2>Google ile giriş</h2><p>Google ile giriş yaptığında adın, profil resmin ve e-posta adresin hesabını oluşturmak ve giriş yapmanı sağlamak için kullanılır. Kimlik doğrulama hizmeti Supabase üzerinden sağlanır.</p><p>Hangi bilgilerin işlendiğini ve hesap silme seçeneklerini gizlilik politikamızda bulabilirsin.</p></section>
+<nav aria-label="Yasal bilgiler"><a href="/privacy-policy">Gizlilik Politikası</a><a href="/terms">Kullanım Koşulları</a><a href="/account-deletion">Hesap Silme</a></nav>
+<footer>Nova AI · EnCa Studios<br>Destek: <a href="mailto:eniscagrigilik1@gmail.com">eniscagrigilik1@gmail.com</a></footer></main></body></html>`));
   router.get('/privacy-policy', (_req, res) => res.type('html').send(page('Gizlilik Politikası', `
     <p>Nova AI, EnCa Studios tarafından sunulan bir yapay zekâ sohbet ve topluluk uygulamasıdır. Bu politika, uygulamanın hangi verileri işlediğini ve bu veriler üzerindeki seçeneklerini açıklar.</p>
     <h2>İşlediğimiz veriler</h2><p>Hesap oluştururken e-posta adresi, görünen ad ve kullanıcı adı işlenir. Profil bilgilerin, ilgi alanların, toplulukta paylaşmayı seçtiğin içerikler ve takip ilişkilerin; uygulama işlevlerini sağlamak için saklanır. Nova AI'ya gönderdiğin sohbet mesajları yanıt oluşturulması için güvenli bağlantıyla sunucumuza ve yapay zekâ hizmeti sağlayıcısına aktarılır. Sohbet geçmişin cihazında saklanır; topluluk gönderileri ise seçtiğin görünürlük seçeneğine göre yayınlanır.</p>
