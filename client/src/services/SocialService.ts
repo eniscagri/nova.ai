@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-export type ConversationStyle = 'dengeli' | 'futbol' | 'basketbol' | 'kitap' | 'girisimci' | 'sakin_koc';
+export type ConversationStyle = 'dengeli' | 'futbol' | 'basketbol' | 'kitap' | 'girisimci' | 'sakin_koc' | 'ekonomist';
 export type Visibility = 'public' | 'followers' | 'private';
 
 export type SocialProfile = {
@@ -34,6 +34,10 @@ export type ProfileStats = {
 const errorText = (message: string) => new Error(message || 'İşlem şu anda tamamlanamadı.');
 
 export class SocialService {
+  async saveTone(userId: string, tone: ConversationStyle): Promise<void> {
+    const { error } = await supabase.from('profiles').update({ conversation_style: tone }).eq('id', userId).select('id').single();
+    if (error) throw errorText('Nova tonu kaydedilemedi. Lütfen tekrar dene.');
+  }
   async profile(userId: string): Promise<SocialProfile | null> {
     const { data, error } = await supabase.from('profiles').select('id, username, display_name, bio, avatar_url, interests, conversation_style, profile_visibility').eq('id', userId).maybeSingle();
     if (error) throw errorText(error.message);

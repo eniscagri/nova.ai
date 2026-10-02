@@ -3,9 +3,14 @@ import { Browser } from '@capacitor/browser';
 import type { AuthUser } from '../services/AuthApi';
 import type { ThemePreference } from '../types/chat';
 import { apiBaseUrl } from '../services/api';
+import type { ConversationStyle } from '../services/SocialService';
+import { conversationTones } from '../services/ConversationTones';
+import { usageRemindersSupported } from '../services/UsageReminders';
 
 // Prop'ları ayrı bir interface'e alarak okunabilirliği artırdık
 interface SettingsProps {
+  tone: ConversationStyle;
+  onTone: (tone: ConversationStyle) => Promise<void>;
   open: boolean;
   theme: ThemePreference;
   user: AuthUser;
@@ -29,8 +34,21 @@ export function Settings({
   remindersEnabled,
   onReminders,
   onClose,
+  tone,
+  onTone,
 }: SettingsProps) {
   const [deleting, setDeleting] = useState(false);
+  const [toneBusy, setToneBusy] = useState(false);
+  const [toneError, setToneError] = useState('');
+  const [notificationBusy, setNotificationBusy] = useState(false);
+  const [notificationError, setNotificationError] = useState('');
+  const updateNotifications = async (action: () => Promise<void>) => {
+    setNotificationBusy(true); setNotificationError('');
+    try { await action(); }
+    catch (reason) { setNotificationError(reason instanceof Error ? reason.message : 'Bildirim ayarı kaydedilemedi.'); }
+    finally { setNotificationBusy(false); }
+  };
+  const changeTone = async (next: ConversationStyle) => { setToneBusy(true); setToneError(''); try { await onTone(next); } catch (reason) { setToneError(reason instanceof Error ? reason.message : 'Ton kaydedilemedi.'); } finally { setToneBusy(false); } };
   if (!open) return null;
 
   const openLegalPage = async (path: string) => { await Browser.open({ url: `${apiBaseUrl}${path}`, windowName: 'Nova AI' }); };
@@ -82,6 +100,21 @@ export function Settings({
           <button onClick={() => void openLegalPage('/terms')}>Kullanım Koşulları</button>
         </div>
 
+        <h3>Nova’nın tonu</h3>
+        <p className="settings-help">İhtiyacına uygun anlatımı seç. Tüm tonlarda her konuda soru sorabilirsin; seçimin hesabına kaydedilir.</p>
+        <fieldset className="tone-options" disabled={toneBusy}>
+          <legend className="sr-only">Nova tonu</legend>
+          {[...new Set(conversationTones.map(item => item.group))].map(group => <div className="tone-group" key={group}>
+            <h4>{group}</h4>
+            <div className="tone-grid">{conversationTones.filter(item => item.group === group).map(item => <label className={`tone-option${tone === item.value ? ' selected' : ''}`} key={item.value}>
+              <input type="radio" name="nova-tone" value={item.value} checked={tone === item.value} onChange={() => void changeTone(item.value)} />
+              <span><strong>{item.label}</strong><small>{item.detail}</small></span>
+            </label>)}</div>
+          </div>)}
+        </fieldset>
+        {toneBusy && <p className="settings-help" role="status">Ton hesabına kaydediliyor…</p>}
+        {toneError && <p className="auth-error" role="alert">{toneError}</p>}
+        <hr />
         <h3>Görünüm</h3>
         <div className="theme-selector">
           {themeOptions.map(({ value, label }) => (
@@ -102,10 +135,10 @@ export function Settings({
         <div className="notification-setting">
           <div>
             <h3>Kullanım hatırlatmaları</h3>
-            <p className="settings-help">Nova, birkaç günde bir gündüz saatlerinde kısa bir fikir veya planlama hatırlatması gönderir.</p>
+            <p className="settings-help">Haftada iki kısa hatırlatma: salı 18.00 ve cumartesi 12.00, cihazının yerel saatine göre. İstediğin zaman kapatabilirsin.</p>
           </div>
           <label className="settings-switch">
-            <input type="checkbox" checked={remindersEnabled} onChange={(event) => void onReminders(event.target.checked)} />
+            <input aria-label="Kullanım hatırlatmalarını etkinleştir" type="checkbox" disabled={notificationBusy || !usageRemindersSupported()} checked={remindersEnabled} onChange={(event) => { const checked = event.target.checked; void updateNotifications(() => onReminders(checked)); }} />
             <span aria-hidden="true" />
             <b>{remindersEnabled ? 'Açık' : 'Kapalı'}</b>
           </label>
@@ -113,6 +146,8 @@ export function Settings({
 
         <hr />
 
+        {!usageRemindersSupported() && <p className="settings-help">Hatırlatmalar Android uygulamasında kullanılabilir.</p>}
+        {notificationError && <p className="auth-error" role="alert">{notificationError}</p>}
         <h3>Sohbet geçmişi</h3>
         <button className="outline-danger" onClick={onClear}>
           Sohbet geçmişini temizle

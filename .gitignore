@@ -16,3 +16,6 @@ android/*.jks
 android/*.keystore
 android/app/build
 server/data/
+release/*.aab
+release/*.apk
+release/*.pem

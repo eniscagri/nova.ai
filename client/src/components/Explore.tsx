@@ -1,16 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SocialService, type ConversationStyle, type ExplorePost, type SocialProfile, type Visibility } from '../services/SocialService';
 import { ProfileAvatar } from './ProfileAvatar';
+import { conversationTones } from '../services/ConversationTones';
 
 const social = new SocialService();
-const styleOptions: Array<{ value: ConversationStyle; label: string; detail: string }> = [
-  { value: 'dengeli', label: 'Net ve dengeli', detail: 'Önce sonucu, sonra uygulanabilir ayrıntıları verir' },
-  { value: 'futbol', label: 'Futbol arkadaşı', detail: 'Enerjik konuşur; uygun olduğunda tek bir futbol benzetmesi kullanır' },
-  { value: 'basketbol', label: 'Takım oyuncusu', detail: 'Hızlı, işbirlikçi ve oyun planı odaklıdır' },
-  { value: 'kitap', label: 'Düşünceli okur', detail: 'Fikirler arasında bağ kurar; alıntı ve kaynak uydurmaz' },
-  { value: 'girisimci', label: 'Girişim ortağı', detail: 'Fikri deneye, ölçüme ve sonraki adıma dönüştürür' },
-  { value: 'sakin_koc', label: 'Sakin koç', detail: 'Yargılamadan dinler ve işi küçük adımlara böler' }
-];
+const styleOptions = conversationTones;
 
 const visibilityText: Record<Visibility, string> = { public: 'Herkese açık', followers: 'Takipçilerim', private: 'Yalnızca ben' };
 

@@ -16,7 +16,9 @@ test('private instructions reload and reject oversized configuration', async () 
     await writeFile(path, 'Bir öğretmen gibi çalış.');
     const football = await buildInstructions('futbol', path);
     assert.match(football, /Bir öğretmen gibi çalış/);
-    assert.match(football, /at most one natural football analogy/);
+    assert.match(football, /creative collaborator/);
+    assert.match(await buildInstructions('basketbol', path), /technical problem-solving assistant/);
+    assert.match(await buildInstructions('kitap', path), /patient learning assistant/);
     assert.match(await buildInstructions('girisimci', path), /testable hypothesis/);
     assert.match(await buildInstructions('sakin_koc', path), /non-judgmental coaching voice/);
     await writeFile(path, 'a'.repeat(12001));

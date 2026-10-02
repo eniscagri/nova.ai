@@ -1,8 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { installViewportSizing } from './services/ViewportSizing';
 import './styles.css';
 import './polish.css';
 import './welcome.css';
 import './product.css';
+import './modern.css';
+installViewportSizing();
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

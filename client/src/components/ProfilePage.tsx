@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ProfileEditor } from './Explore';
 import { ProfileAvatar } from './ProfileAvatar';
+import { conversationTones } from '../services/ConversationTones';
 import { SocialService, type ConversationStyle, type ExplorePost, type ProfileStats, type SocialProfile, type Visibility } from '../services/SocialService';
 
 const social = new SocialService();
 
 const styleLabels: Record<ConversationStyle, string> = {
-  dengeli: 'Net ve dengeli',
-  futbol: 'Futbol arkadaşı',
-  basketbol: 'Takım oyuncusu',
-  kitap: 'Düşünceli okur',
-  girisimci: 'Girişim ortağı',
-  sakin_koc: 'Sakin koç'
+  dengeli: conversationTones.find(item => item.value === 'dengeli')!.label,
+  ekonomist: 'Nova Ekonomist',
+  futbol: conversationTones.find(item => item.value === 'futbol')!.label,
+  basketbol: conversationTones.find(item => item.value === 'basketbol')!.label,
+  kitap: conversationTones.find(item => item.value === 'kitap')!.label,
+  girisimci: conversationTones.find(item => item.value === 'girisimci')!.label,
+  sakin_koc: conversationTones.find(item => item.value === 'sakin_koc')!.label
 };
 
 const visibilityLabels: Record<Visibility, string> = {

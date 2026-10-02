@@ -4,6 +4,15 @@ Nova AI; Android için tasarlanmış, güvenli backend üzerinden AI yanıtı al
 
 ## Neler var?
 
+- Modern, telefon ve tablet uyumlu sohbet ekranı; açık/koyu tema, Nova tonu seçimi ve kaynak kartları
+- **Nova Ekonomist:** Ayarlar → Nova’nın tonu içinde Türkiye vergileri, Borsa İstanbul ve İİBF derslerine odaklanan seçenek. Ayrı bir eğitilmiş model değildir; mevcut modelin uzmanlık talimatları ve web araştırmasıyla çalışır. Güncel oranları ve mevzuatı resmî kaynaklardan doğrular; eksiksiz mevzuat bilgisi veya canlı piyasa verisi garantisi vermez.
+- **Web araması:** Otomatik, her zaman veya kapalı. Güncel/vergi/piyasa sorularında otomatik mod aramayı zorunlu tutar. OpenAI Responses API `web_search` aracını kullanır; API anahtarı, araç destekli model ve araç kullanımına açık bir OpenAI projesi gerekir. Arama ek API maliyeti oluşturabilir. Dönen kaynaklar yanıt içinde tıklanabilir bağlantılarla gösterilir.
+- **Bellek:** Supabase üzerinde hesaba özel en fazla 30 kayıt. Açık kişisel ifadelerden isim, şehir, eğitim, meslek, hedef ve tercih kaydeder; serbest not ekleme/düzenleme/silme de desteklenir. Kayıt yapıldığında bildirim gösterilir. Kapalıyken yeni otomatik kayıt yapmaz ve belleği AI isteğine eklemez. Şifre, kimlik, hesap numarası ve açık hassas bilgi ifadeleri kaydedilmez. Bellek etkin olduğunda kayıtlar kişiselleştirme için AI sunucusuna gönderilir. Aynı hesapla giriş yapılan tüm cihazlarda kullanılır; ayarlar ve silme de hesap genelinde geçerlidir. Kayıtlar her sohbet öncesinde, bellek paneli açıldığında ve uygulamaya dönüldüğünde yenilenir.
+
+Geliştirme ortamında, Supabase kurulmadan tasarımı incelemek için `http://localhost:5173/?preview=1` kullanılabilir. Bu önizleme AI isteği göndermez ve üretim derlemesinde etkin değildir.
+
+Doğrulama: `npm run build` ve `npm test --workspace=server`. Testler harici AI servisine veya web aramasına bağlanmadan istek yapılandırmasını, kaynak aktarımını ve bellek davranışını doğrular.
+
 - Supabase e-posta/şifre ile kayıt, giriş, çıkış ve şifre yenileme
 - Hesap başına cihazda saklanan sohbet geçmişi
 - Markdown, kod bloğu, kopyalama, yanıtı durdurma ve güvenli otomatik kaydırma
@@ -112,7 +121,7 @@ Keystore tanımlanmadan oluşturulan AAB imzasızdır ve Play Console’a yükle
 ### Play Store yayın öncesi kontrol
 
 - `VITE_API_URL` yayınlanmış HTTPS backend adresi olmalı; yerel adres kullanma.
-- Render ortam değişkenlerinde `AI_PROVIDER=openai`, `OPENAI_API_KEY` ve `OPENAI_MODEL=gpt-5` bulunmalı. Anahtarı istemciye, Android paketine veya Supabase'e koyma.
+- Render ortam değişkenlerinde `AI_PROVIDER=openai`, `OPENAI_API_KEY` ve web aramasını destekleyen `OPENAI_MODEL` bulunmalı (varsayılan `gpt-5.2`). Anahtarı istemciye, Android paketine veya Supabase'e koyma.
 - Supabase Authentication → URL Configuration içinde `com.novaai.chat://auth` kalmalı.
 - Google girişinde Google Auth Platform ile Supabase Google Provider etkin olmalı.
 - `android/keystore.properties` ve `.jks` dosyanı güvenli, yedekli bir yerde tut. Aynı anahtar tüm sonraki Play Store güncellemeleri için gereklidir.
